@@ -1,0 +1,48 @@
+.ui_components {
+	input, button {
+		color: black;
+	}
+}
+
+.datepicker-days {
+	color: black;
+}
+
+table {
+	tr {
+		td, th {
+			padding: 7px;
+		}
+		th {
+
+		}
+		td {
+			padding-right: 42px;
+		}
+	}
+}
+
+.fc-list-heading-main {
+	color: black;
+}
+
+tr.fc-list-item.fc-has-url {
+	&:hover {
+		color: black;
+	}
+}
+
+.fc-unthemed .fc-today, .fc-unthemed .fc-list-empty {
+	background-color: rgba(0,0,100,0.4);
+}
+
+.page-title {
+	&.push-down {
+		position: relative;
+		top: 17px;
+	}
+}
+
+.select2-results__option {
+	color: black;
+}

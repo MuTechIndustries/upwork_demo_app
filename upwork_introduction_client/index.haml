@@ -1,0 +1,366 @@
+!!!
+%html
+	%head
+		%meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
+		%title Light Blue - Responsive Admin Dashboard Template
+		%link{:href => "css/application.css", :rel => "stylesheet"}/
+		%link{:href => "css/fullcalendar.min.css", :rel => "stylesheet"}/
+		%link{:href => "css/bootstrap-datepicker.min.css", :rel => "stylesheet"}/
+		%link{:href => "css/switchery.min.css", :rel => "stylesheet"}/
+		%link{:href => "css/select2.min.css", :rel => "stylesheet"}/
+		%link{:href => "css/custom.css", :rel => "stylesheet"}/
+		%link{:href => "img/favicon.png", :rel => "shortcut icon"}/
+		%meta{:content => "width=device-width, initial-scale=1.0", :name => "viewport"}/
+		%meta{:content => "", :name => "description"}/
+		%meta{:content => "", :name => "author"}/
+		%meta{:charset => "utf-8"}/
+	%body
+		.logo
+			%h4
+				%a{:href => "index.html"}
+					THR33
+					%strong PL
+		%nav#sidebar.sidebar.nav-collapse.collapse
+			%ul#side-nav.side-nav
+				%li.active
+					%a{:href => "#skus"}
+						%i.fa.fa-dropbox
+						%span.name Skus
+				%li.panel
+					%a.accordion-toggle.collapsed{"data-parent" => "#side-nav", "data-toggle" => "collapse", :href => "#po_sub_nav"}
+						%i.fa.fa-file
+						%span.name POs
+					%ul#po_sub_nav.panel-collapse.collapse
+						%li
+							%a{:href => "#purchace_orders"} Calendar
+						%li
+							%a{:href => "#purchace_orders/new"} New
+
+		.wrap
+			%header.page-header
+				.navbar
+					/ .notifications.pull-right
+					/ 	.alert.pull-right
+					/ 		%a.close.ml-xs{"data-dismiss" => "alert", :href => "#"} ×
+					/ 		%i.fa.fa-info-circle.mr-xs
+					/ 		Check out Light Blue
+					/ 		%a#notification-link{:href => "#"} settings
+					/ 		on the right!
+			#main_content.content.container
+
+		/ Core Libs
+		%script{:src => "lib/jquery/dist/jquery.min.js"}
+		%script{:src => "lib/jquery-pjax/jquery.pjax.js"}
+		%script{:src => "lib/underscore/underscore.js"}
+
+		/ Responsive Frameworks
+		%script{:src => "lib/bootstrap-sass/assets/javascripts/bootstrap.min.js"}
+		%script{:src => "lib/widgster/widgster.js"}
+		%script{:src => "lib/slimScroll/jquery.slimscroll.min.js"}
+		%script{:src => "lib/jquery.sparkline/index.js"}
+
+		/ Rich Crud Client Libs
+		%script{:src => "lib/backbone/backbone.js"}
+		%script{:src => "lib/baby_draco/client_domain.js"}
+
+		/ Vendor Libs
+		%script{:src => "js/Chart.min.js"}
+		%script{:src => "js/color-scheme.min.js"}
+		%script{:src => "js/moment-with-locales.js"}
+		%script{:src => "js/fullcalendar.min.js"}
+		%script{:src => "js/bootstrap-datepicker.min.js"}
+		%script{:src => "js/switchery.min.js"}
+		%script{:src => "js/select2.min.js"}
+		%script{:src => "js/md5.js"}
+
+		/ Implementation Code
+		%script{src: "upwork_intro/app.js"}
+
+		/ Templates
+		:plain
+
+			<script type='text/template' id="skus_index_template">
+				<h1 class="page-title">Skus <small>Index</small></h1>
+				<div class="row">
+					<div class="col-lg-5">
+						<div class="widget">
+							<header><h4>Stock Chart</h4></header>
+							<div class="body no-margin">
+								<canvas id="stock_chart" width="100%" height="100%"></canvas>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-7">
+						<div class="widget">
+							<header><h4>Skus</h4></header>
+							<div class="body no-margin">
+								<table class="table-bordered">
+									<tr>
+										<th>Product Name</th>
+										<th>Product Sku</th>
+										<th>Inventory</th>
+									</tr>
+									<% _.each(this.collection.toJSON(), function(sku) { %>
+										<tr>
+											<td><%- sku.name %>
+											<td><%- sku.sku %>
+											<td><%- sku.inventory %>
+										</tr>
+									<% }); %>
+								</table>
+							</div>
+						</div>
+					</div>		
+				</div>
+			</script>
+
+			<script type='text/template' id="purchace_orders_index_template">
+				<h1 class="page-title">Purchace Orders <small>Index</small></h1>
+				<div class="row">
+					<div class="col-lg-7">
+						<div class="widget">
+							<div id="purchace_order_calendar"></div>
+						</div>
+					</div>
+					<div class="col-lg-5">
+						<div class="widget">
+							<div id="purchace_order_list"></div>
+						</div>
+					</div>
+				</div>
+			</script>
+
+			<script type='text/template' id="purchace_order_show_template">
+				<section class="widget">
+					<div class="body no-margin">
+						<h1 class="page-title">Purchace Order <small><%- po.get('id') %></small></h1>
+						<hr>
+						<section class="invoice-info well">
+							<div class="row">
+								<div class="col-sm-6 col-print-6">
+									<h4 class="details-title">Supply Company Information</h4>
+									<h3 class="company-name">
+										<%- po.get('supply_company_name') %>
+									</h3>
+									<h4 class="status">
+										Status: <span class="label label-<%- po.get('has_been_received') ? "success" : "warning" %>"><%- po.get('has_been_received') ? "Received" : "Shipping" %></span>
+									</h3>
+									<address>
+										<strong><%- po.get('supply_company_street_address') %></strong><br>
+										<%- po.get('supply_company_city') %>, <%- po.get('supply_company_state') %> <%- po.get('supply_company_zip') %><br>
+										<abbr title="Work Phone">phone:</abbr> <%- po.get('supply_company_phone') %><br>
+										<abbr title="Work email">e-mail:</abbr> <a href="mailto:#"><%- po.get('supply_company_email') %></a><br>
+									</address>
+								</div>
+							</div>
+						</section>
+						<table class="table table-bordered table-striped">
+							<thead>
+								<tr>
+									<th>#</th>
+									<th>Item</th>
+									<th class="hidden-xs">Sku</th>
+									<th>Quantity</th>
+									<th class="hidden-xs">Price per Unit</th>
+									<th>Total</th>
+								</tr>
+							</thead>
+							<tbody>
+								<% _.each(po.get('line_items'), function(line_item) { %>
+									<tr>
+										<td><%- line_item.id %></td>
+										<td><%- line_item.name %></td>
+										<td class="hidden-xs"><%- line_item.sku_cache %></td>
+										<td><%- line_item.quantity %></td>
+										<td class="hidden-xs">$<%- line_item.price_per_unit.toFixed(2) %></td>
+										<td>$<%- (line_item.quantity * line_item.price_per_unit).toFixed(2) %></td>
+									</tr>
+								<% }); %>
+							</tbody>
+						</table>
+						<div class="row">
+							<div class="col-sm-6 col-print-6">
+							</div>
+							<div class="col-sm-6 col-print-6">
+								<div class="row text-align-right">
+									<div class="col-xs-6"></div>
+									<div class="col-xs-3">
+										<p>Subtotal</p>
+										<p>Tax(10%)</p>
+										<p class="no-margin"><strong>Total</strong></p>
+									</div>
+									<div class="col-xs-3">
+										<p>$<%- po.get('sub_total') %></p>
+										<p>$<%- po.get('tax') %></p>
+										<p class="no-margin"><strong>$<%- po.get('total') %></strong></p>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="btn-toolbar mt-lg text-align-right hidden-print">
+							<a href="#purchace_orders/<%- po.get('id') %>/edit">
+								<button id="print" class="btn btn-default">
+									<i class="fa fa-print"></i>
+									&nbsp;&nbsp;
+									Edit
+								</button>
+							</a>
+							<button class="btn btn-danger" id="delete_po">
+								Delete
+								&nbsp;
+							</button>
+							<% if(!po.get('has_been_received')) { %>
+								<button class="btn btn-success" id="receive_po">
+									Receive
+									&nbsp;
+								</button>
+							<% } else { %>
+								<button class="btn btn-warning" id="unreceive_po">
+									Unreceive
+									&nbsp;
+								</button>
+							<% } %>
+						</div>
+					</div>
+				</section>
+			</script>
+
+			<script type='text/template' id="purchace_order_edit_template">
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="widget">
+							<form class="form-horizontal">
+								<h1 class="page-title push-down">Edit Purchace Order <small><%- po.get('id') %></small></h1>
+								<fieldset id="supply_company_information">
+									<legend class="section">Supply Company Information</legend>
+									<div class="form-group">
+										<label for"supply_company_name_field" class="col-sm-4 control-label">Company Name</label>
+										<div class="col-sm-7">
+											<input type="text" id="supply_company_name_field" class="form-control" value="<%- po.get('supply_company_name') %>"></input>
+										</div>
+									</div>
+									<div class="form-group">
+										<label for"supply_company_street_address_field" class="col-sm-4 control-label">Street Address</label>
+										<div class="col-sm-7">
+											<input type="text" id="supply_company_street_address_field" class="form-control" value="<%- po.get('supply_company_street_address') %>"></input>
+										</div>
+									</div>
+									<div class="form-group">	
+										<label for"supply_company_city_field" class="col-sm-4 control-label">City</label>
+										<div class="col-sm-7">
+											<input type="text" id="supply_company_city_field" class="form-control" value="<%- po.get('supply_company_city') %>"></input>
+										</div>
+									</div>
+									<div class="form-group">	
+										<label for"supply_company_state_field" class="col-sm-4 control-label">State</label>
+										<div class="col-sm-7">
+											<input type="text" id="supply_company_state_field" class="form-control" value="<%- po.get('supply_company_state') %>"></input>
+										</div>
+									</div>
+									<div class="form-group">	
+										<label for"supply_company_zip_field" class="col-sm-4 control-label">Zipcode</label>
+										<div class="col-sm-7">
+											<input type="text" id="supply_company_zip_field" class="form-control" value="<%- po.get('supply_company_zip') %>"></input>
+										</div>
+									</div>
+									<div class="form-group">	
+										<label for"supply_company_email_field" class="col-sm-4 control-label">Email</label>
+										<div class="col-sm-7">
+											<input type="text" id="supply_company_email_field" class="form-control" value="<%- po.get('supply_company_email') %>"></input>
+										</div>
+									</div>
+									<div class="form-group">
+										<label for"supply_company_phone_field" class="col-sm-4 control-label">Phone</label>
+										<div class="col-sm-7">
+											<input type="text" id="supply_company_phone_field" class="form-control" value="<%- po.get('supply_company_phone') %>"></input>
+										</div>
+									</div>
+								</fieldset>
+								<fieldset id="shipping_meta_data">
+									<legend class="section">Shipping Meta Data</legend>
+									<div class="form-group">
+										<label class="col-sm-4 control-label">Placed At</label>
+										<div class="col-sm-7">
+											<input type="text" id="placed_at_field" class="form-control date_picker" value="<%- po.get('placed_at') %>"></input>
+										</div>
+									</div>
+									<div class="form-group">
+										<label class="col-sm-4 control-label">Expected To Arrive At</label>
+										<div class="col-sm-7">
+											<input type="text" id="expected_to_arive_at_field" class="form-control date_picker" value="<%- po.get('expected_to_arive_at') %>"></input>
+										</div>
+									</div>
+								</fieldset>
+								<% if (po.get('id')) { %>
+									<fieldset>
+										<legend class="section">Add new line item</legend>
+										<div class="form-group">
+											<label class="col-sm-4 control-label" for="country-select">Select with search</label>
+											<div class="col-sm-7">
+												<select class="select2 form-control" id="new_line_item_sku_id"></select>
+											</div>
+										</div>
+										<div class="form-group">
+											<label class="col-sm-4 control-label">Price Per Unit</label>
+											<div class="col-sm-7">
+												<input type="text" class="form-control" id="new_line_item_price_per_unit"></input>
+											</div>
+										</div>
+										<div class="form-group">
+											<label class="col-sm-4 control-label">Quantity</label>
+											<div class="col-sm-7">
+												<input type="text" class="form-control" id="new_line_item_quantity"></input>
+											</div>
+										</div>
+										<div class="form-actions">
+											<div class="row">
+												<div class="col-sm-offset-4 col-sm-7">
+													<div class="btn-toolbar">
+														<button type="button" class="btn btn-success" id="add_new_line_item">Add Line Item</button>
+													</div>
+												</div>
+											</div>
+										</div>
+									</fieldset>
+								<% } %>
+								<% _.each(po.get('line_items'), function(line_item, index) { %>
+									<fieldset class="line_item_edit" data-line-item-id="<%- line_item.id %>" data-line-item-index="<%- index %>">
+										<legend class="section">Line Item: <%- index + 1 %> : <%- line_item.name %></legend>
+										<input type="hidden" name="id" value="<%- line_item.id %>"></input>
+										<div class="form-group">
+											<label class="col-sm-4 control-label">Price Per Unit</label>
+											<div class="col-sm-7">
+												<input name="price_per_unit" type="text" class="form-control" value="<%- line_item.price_per_unit %>"></input>
+											</div>
+										</div>
+										<div class="form-group">
+											<label class="col-sm-4 control-label">Quantity</label>
+											<div class="col-sm-7">
+												<input name="quantity" type="text" class="form-control" value="<%- line_item.quantity %>"></input>
+											</div>
+										</div>
+									</fieldset>
+									<div class="form-actions">
+										<div class="row">
+											<div class="col-sm-offset-4 col-sm-7">
+												<div class="btn-toolbar">
+													<button type="button" class="btn btn-warning remove_line_item" data-line-item-id="<%- line_item.id %>">Delete</button>
+												</div>
+											</div>
+										</div>
+									</div>
+								<% }); %>
+								<div class="form-actions">
+									<div class="row">
+										<div class="col-sm-offset-4 col-sm-7">
+											<div class="btn-toolbar">
+												<button type="button" class="btn btn-primary" id="save_button">Save Changes</button>
+											</div>
+										</div>
+									</div>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</script>
